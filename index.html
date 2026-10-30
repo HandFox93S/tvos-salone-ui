@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Apple TV — Tv Salone</title>
+  <script src="https://cdn.jsdelivr.net/npm/@twemoji/api@latest/dist/twemoji.min.js" crossorigin="anonymous"></script>
   <style>
     :root {
       --bg-deep: #080b12;
@@ -410,8 +411,8 @@
       z-index: 12;
       width: 22vw;
       min-height: 21vh;
-      max-height: 44vh;
-      padding: 2vh 1.5vw 2.2vh;
+      max-height: 55vh;
+      padding: 2vh 1.5vw 1.8vh;
       border-radius: 0.4vw 0.4vw 1.2vw 0.4vw;
       background: linear-gradient(160deg, #fef08a 0%, #facc15 100%);
       color: #1c1917;
@@ -441,6 +442,9 @@
     .sticky-note[data-color="yellow"] {
       background: linear-gradient(160deg, #fef08a 0%, #facc15 100%);
     }
+    .sticky-note[data-color="white"] {
+      background: linear-gradient(160deg, #ffffff 0%, #e2e8f0 100%);
+    }
     .sticky-note[data-color="pink"] {
       background: linear-gradient(160deg, #fecdd3 0%, #fb7185 100%);
     }
@@ -462,18 +466,26 @@
       pointer-events: none;
     }
 
-    .sticky-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 0.76vw;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: rgba(28, 25, 23, 0.68);
+    .sticky-photo-wrap {
+      width: 100%;
       margin-bottom: 1.1vh;
-      padding-bottom: 0.6vh;
-      border-bottom: 1px dashed rgba(28, 25, 23, 0.18);
+      border-radius: 0.55vw;
+      overflow: hidden;
+      background: rgba(0, 0, 0, 0.08);
+      border: 2px solid rgba(255, 255, 255, 0.78);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      display: none;
+    }
+
+    .sticky-photo-wrap.has-photo {
+      display: block;
+    }
+
+    .sticky-photo-img {
+      width: 100%;
+      max-height: 22vh;
+      object-fit: cover;
+      display: block;
     }
 
     .sticky-body {
@@ -488,8 +500,16 @@
       font-family: "Segoe Print", "Bradley Hand", "Chalkboard SE", -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
+    .sticky-body img.emoji {
+      height: 1.22em;
+      width: 1.22em;
+      margin: 0 0.08em;
+      vertical-align: -0.18em;
+      display: inline-block;
+    }
+
     .sticky-footer {
-      margin-top: 1.2vh;
+      margin-top: 1vh;
       font-size: 0.78vw;
       font-weight: 700;
       color: rgba(28, 25, 23, 0.58);
@@ -510,7 +530,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 16px;
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.2s ease;
@@ -525,15 +545,17 @@
     .sticky-modal {
       width: 100%;
       max-width: 440px;
+      max-height: 92vh;
+      overflow-y: auto;
       border-radius: 22px;
-      padding: 24px;
+      padding: 22px;
       background: #141824;
       border: 1px solid rgba(255, 255, 255, 0.18);
       box-shadow: 0 28px 70px rgba(0, 0, 0, 0.85);
       color: #f8fafc;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
     }
 
     .sticky-modal-top {
@@ -543,7 +565,7 @@
     }
 
     .sticky-modal-title {
-      font-size: 19px;
+      font-size: 18px;
       font-weight: 700;
       display: flex;
       align-items: center;
@@ -564,7 +586,8 @@
     .sticky-color-row {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
     .sticky-color-label {
@@ -577,19 +600,20 @@
       width: 30px;
       height: 30px;
       border-radius: 50%;
-      border: 2.5px solid transparent;
+      border: 2.5px solid rgba(255, 255, 255, 0.25);
       cursor: pointer;
       transition: transform 0.15s ease;
     }
 
     .sticky-swatch.active {
-      border-color: #ffffff;
+      border-color: #eab308;
+      box-shadow: 0 0 0 2px #ffffff;
       transform: scale(1.16);
     }
 
     .sticky-textarea {
       width: 100%;
-      height: 150px;
+      height: 125px;
       padding: 14px 16px;
       border-radius: 14px;
       border: 2px solid rgba(255, 255, 255, 0.15);
@@ -603,6 +627,57 @@
       user-select: text;
       -webkit-user-select: text;
       font-family: "Segoe Print", "Bradley Hand", -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .sticky-photo-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sticky-photo-btn {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px dashed rgba(255, 255, 255, 0.32);
+      background: rgba(255, 255, 255, 0.06);
+      color: #f8fafc;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .sticky-photo-remove-btn {
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: none;
+      background: rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: none;
+    }
+
+    .sticky-photo-preview-box {
+      display: none;
+      width: 100%;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      max-height: 150px;
+    }
+
+    .sticky-photo-preview-box.has-photo {
+      display: block;
+    }
+
+    .sticky-photo-preview-img {
+      width: 100%;
+      max-height: 150px;
+      object-fit: cover;
+      display: block;
     }
 
     .sticky-modal-actions {
@@ -642,6 +717,7 @@
         right: 5vw;
         width: min(88vw, 330px);
         min-height: 170px;
+        max-height: 62vh;
         padding: 16px 18px;
         border-radius: 12px 12px 24px 12px;
       }
@@ -649,14 +725,18 @@
         width: 72px;
         height: 12px;
       }
-      .sticky-header {
-        font-size: 12px;
+      .sticky-photo-wrap {
+        border-radius: 8px;
+        margin-bottom: 10px;
+      }
+      .sticky-photo-img {
+        max-height: 160px;
       }
       .sticky-body {
         font-size: 19px;
       }
       .sticky-footer {
-        font-size: 11px;
+        font-size: 12px;
       }
     }
   </style>
@@ -673,7 +753,12 @@
 
   <!-- Sticky Note (Post-it) on Home Screen -->
   <aside id="stickyNote" class="sticky-note" data-color="yellow" title="Tocca per scrivere una nota sulla TV">
-    <div id="stickyText" class="sticky-body">Tocca questo foglietto dal telefono per scrivere una nota sulla TV!</div>
+    <div>
+      <div id="stickyPhotoWrap" class="sticky-photo-wrap">
+        <img id="stickyPhotoImg" class="sticky-photo-img" alt="Foto Nota" />
+      </div>
+      <div id="stickyText" class="sticky-body">Tocca questo foglietto dal telefono per scrivere una nota sulla TV!</div>
+    </div>
     <div class="sticky-footer">
       <span id="stickyTime">--:--</span>
     </div>
@@ -687,15 +772,24 @@
         <button id="stickyCloseBtn" class="sticky-close-btn" type="button">✕</button>
       </div>
       <div class="sticky-color-row">
-        <span class="sticky-color-label">Colore foglietto:</span>
+        <span class="sticky-color-label">Colore:</span>
         <button type="button" class="sticky-swatch active" data-swatch="yellow" style="background:#facc15" aria-label="Giallo"></button>
+        <button type="button" class="sticky-swatch" data-swatch="white" style="background:#ffffff" aria-label="Bianco"></button>
         <button type="button" class="sticky-swatch" data-swatch="pink" style="background:#fb7185" aria-label="Rosa"></button>
         <button type="button" class="sticky-swatch" data-swatch="blue" style="background:#38bdf8" aria-label="Azzurro"></button>
         <button type="button" class="sticky-swatch" data-swatch="green" style="background:#4ade80" aria-label="Verde"></button>
       </div>
-      <textarea id="stickyInput" class="sticky-textarea" maxlength="280" placeholder="Scrivi qui il messaggio da mostrare sulla TV..."></textarea>
+      <textarea id="stickyInput" class="sticky-textarea" maxlength="280" placeholder="Scrivi qui il messaggio (anche con emoji 🤍) da mostrare sulla TV..."></textarea>
+      <div class="sticky-photo-controls">
+        <input id="stickyPhotoInput" type="file" accept="image/*" style="display:none" />
+        <button id="stickyPhotoAddBtn" class="sticky-photo-btn" type="button">📷 Aggiungi foto nel foglietto</button>
+        <button id="stickyPhotoRemoveBtn" class="sticky-photo-remove-btn" type="button">🗑️ Rimuovi foto</button>
+      </div>
+      <div id="stickyPhotoPreviewBox" class="sticky-photo-preview-box">
+        <img id="stickyPhotoPreviewImg" class="sticky-photo-preview-img" alt="Anteprima foto" />
+      </div>
       <div class="sticky-modal-actions">
-        <button id="stickyClearBtn" class="sticky-btn sticky-btn-clear" type="button">Svuota</button>
+        <button id="stickyClearBtn" class="sticky-btn sticky-btn-clear" type="button">Svuota tutto</button>
         <button id="stickySaveBtn" class="sticky-btn sticky-btn-save" type="button">Salva sulla TV ✓</button>
       </div>
     </div>
@@ -1265,30 +1359,42 @@
         }
       }
 
-      // === REAL-TIME STICKY NOTE (PHONE <-> TV CLOUD & LOCAL SYNC) ===
+      // === REAL-TIME STICKY NOTE (PHONE <-> TV CLOUD & LOCAL SYNC + PHOTO + EMOJI) ===
       var STICKY_TOPIC = 'tvos_salone_93_sticky_f3pkjbwb';
-      var STICKY_STORAGE_KEY = 'tvos_salone_sticky_v1';
+      var STICKY_STORAGE_KEY = 'tvos_salone_sticky_v2';
       var stickyNoteEl = document.getElementById('stickyNote');
       var stickyTextEl = document.getElementById('stickyText');
       var stickyTimeEl = document.getElementById('stickyTime');
+      var stickyPhotoWrap = document.getElementById('stickyPhotoWrap');
+      var stickyPhotoImg = document.getElementById('stickyPhotoImg');
       var stickyModalBackdrop = document.getElementById('stickyModalBackdrop');
       var stickyInput = document.getElementById('stickyInput');
+      var stickyPhotoInput = document.getElementById('stickyPhotoInput');
+      var stickyPhotoAddBtn = document.getElementById('stickyPhotoAddBtn');
+      var stickyPhotoRemoveBtn = document.getElementById('stickyPhotoRemoveBtn');
+      var stickyPhotoPreviewBox = document.getElementById('stickyPhotoPreviewBox');
+      var stickyPhotoPreviewImg = document.getElementById('stickyPhotoPreviewImg');
       var stickySaveBtn = document.getElementById('stickySaveBtn');
       var stickyClearBtn = document.getElementById('stickyClearBtn');
       var stickyCloseBtn = document.getElementById('stickyCloseBtn');
       var swatchBtns = document.querySelectorAll('.sticky-swatch');
       var stickyModalOpen = false;
+      var draftPhotoDataUrl = '';
+      var fetchedImageKeys = {};
 
       var SWATCH_BG = {
         yellow: '#fef08a',
+        white: '#ffffff',
         pink: '#fecdd3',
         blue: '#bae6fd',
         green: '#bbf7d0'
       };
 
       var currentSticky = {
-        text: 'Tocca questo foglietto dal telefono per scrivere una nota sulla TV! 📌',
-        color: 'yellow',
+        text: 'Sei il mio amore grande 🤍',
+        color: 'blue',
+        image: '',
+        imageKey: '',
         updatedAt: 0
       };
 
@@ -1310,32 +1416,98 @@
         return hh + ':' + mm;
       }
 
+      function parseEmojisInElement(el) {
+        try {
+          if (window.twemoji && typeof window.twemoji.parse === 'function') {
+            window.twemoji.parse(el, {
+              folder: 'svg',
+              ext: '.svg',
+              base: 'https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/'
+            });
+          }
+        } catch (e) {}
+      }
+
       function renderSticky(note) {
         if (!note || typeof note.text !== 'string') return;
         currentSticky = {
           text: note.text,
-          color: note.color || 'yellow',
+          color: SWATCH_BG[note.color] ? note.color : 'yellow',
+          image: typeof note.image === 'string' ? note.image : (currentSticky.image || ''),
+          imageKey: note.imageKey || '',
           updatedAt: Number(note.updatedAt || Date.now())
         };
+        if (note.image === '') {
+          currentSticky.image = '';
+          currentSticky.imageKey = '';
+        }
+
         try {
           localStorage.setItem(STICKY_STORAGE_KEY, JSON.stringify(currentSticky));
         } catch (e) {}
 
         var displayTxt = currentSticky.text.trim();
-        stickyTextEl.textContent = displayTxt || 'Nessuna nota scritta. Tocca per aggiungere un promemoria!';
+        if (displayTxt) {
+          stickyTextEl.style.display = 'block';
+          stickyTextEl.textContent = displayTxt;
+          parseEmojisInElement(stickyTextEl);
+        } else if (currentSticky.image) {
+          stickyTextEl.style.display = 'none';
+          stickyTextEl.textContent = '';
+        } else {
+          stickyTextEl.style.display = 'block';
+          stickyTextEl.textContent = 'Tocca dal telefono per lasciare una nota o una foto!';
+        }
+
+        if (currentSticky.image) {
+          stickyPhotoImg.src = currentSticky.image;
+          stickyPhotoWrap.classList.add('has-photo');
+        } else {
+          stickyPhotoImg.removeAttribute('src');
+          stickyPhotoWrap.classList.remove('has-photo');
+        }
+
         stickyNoteEl.setAttribute('data-color', currentSticky.color);
         stickyTimeEl.textContent = formatStickyTime(currentSticky.updatedAt);
       }
 
       function applyIncomingSticky(rawObj) {
-        if (!rawObj || typeof rawObj.text !== 'string') return;
+        if (!rawObj) return;
+        if (rawObj.reload) {
+          window.location.replace(rawObj.url || ('https://handfox93s.github.io/tvos-salone-ui/?k=salone93&_t=' + Date.now()));
+          return;
+        }
+        if (typeof rawObj.text !== 'string') return;
         var incomingTs = Number(rawObj.updatedAt || 0);
-        if (incomingTs >= Number(currentSticky.updatedAt || 0)) {
-          var changed = (rawObj.text !== currentSticky.text || rawObj.color !== currentSticky.color);
-          renderSticky(rawObj);
-          if (changed && incomingTs > 0 && !stickyModalOpen) {
-            showToast('📌 Nuova nota ricevuta sulla TV!');
-          }
+        if (incomingTs < Number(currentSticky.updatedAt || 0)) return;
+
+        // If the note includes a cloud imageKey on bytebin, fetch the full note+photo JSON
+        if (rawObj.imageKey && (!currentSticky.image || currentSticky.imageKey !== rawObj.imageKey) && !fetchedImageKeys[rawObj.imageKey]) {
+          fetchedImageKeys[rawObj.imageKey] = true;
+          fetch('https://bytebin.lucko.me/' + encodeURIComponent(rawObj.imageKey))
+            .then(function(r) { return r.json(); })
+            .then(function(fullNote) {
+              if (fullNote && typeof fullNote.text === 'string') {
+                fullNote.imageKey = rawObj.imageKey;
+                renderSticky(fullNote);
+                if (!stickyModalOpen) showToast('📌 Nota con foto aggiornata!');
+              }
+            })
+            .catch(function() {
+              renderSticky(rawObj);
+            });
+          return;
+        }
+
+        var changed = (rawObj.text !== currentSticky.text || rawObj.color !== currentSticky.color || (rawObj.imageKey || '') !== (currentSticky.imageKey || ''));
+        if (!rawObj.imageKey) {
+          rawObj.image = '';
+        } else if (rawObj.imageKey === currentSticky.imageKey) {
+          rawObj.image = currentSticky.image;
+        }
+        renderSticky(rawObj);
+        if (changed && incomingTs > 0 && !stickyModalOpen) {
+          showToast('📌 Nota aggiornata sulla TV!');
         }
       }
 
@@ -1348,10 +1520,26 @@
         stickyInput.setAttribute('data-selected-color', c);
       }
 
+      function updateDraftPhotoUI(dataUrl) {
+        draftPhotoDataUrl = dataUrl || '';
+        if (draftPhotoDataUrl) {
+          stickyPhotoPreviewImg.src = draftPhotoDataUrl;
+          stickyPhotoPreviewBox.classList.add('has-photo');
+          stickyPhotoRemoveBtn.style.display = 'inline-block';
+          stickyPhotoAddBtn.textContent = '📷 Cambia foto';
+        } else {
+          stickyPhotoPreviewImg.removeAttribute('src');
+          stickyPhotoPreviewBox.classList.remove('has-photo');
+          stickyPhotoRemoveBtn.style.display = 'none';
+          stickyPhotoAddBtn.textContent = '📷 Aggiungi foto nel foglietto';
+        }
+      }
+
       function openStickyModal() {
         stickyModalOpen = true;
         stickyInput.value = currentSticky.text;
         setModalColor(currentSticky.color || 'yellow');
+        updateDraftPhotoUI(currentSticky.image || '');
         stickyModalBackdrop.classList.add('open');
         stickyModalBackdrop.setAttribute('aria-hidden', 'false');
         setTimeout(function() {
@@ -1385,44 +1573,136 @@
         });
       });
 
-      function publishStickyNote(textValue, colorValue) {
-        var payload = {
-          text: String(textValue || '').trim(),
-          color: colorValue || 'yellow',
-          updatedAt: Date.now()
-        };
-        renderSticky(payload);
-        closeStickyModal();
-        showToast('📌 Nota inviata alla TV!');
+      stickyPhotoAddBtn.addEventListener('click', function() {
+        stickyPhotoInput.click();
+      });
 
-        // 1. Publish to Cloud (ntfy.sh) for instant real-time sync even with PC off
+      stickyPhotoRemoveBtn.addEventListener('click', function() {
+        stickyPhotoInput.value = '';
+        updateDraftPhotoUI('');
+      });
+
+      stickyPhotoInput.addEventListener('change', function(e) {
+        var file = e.target.files && e.target.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function(ev) {
+          var img = new Image();
+          img.onload = function() {
+            var maxDim = 560;
+            var w = img.width;
+            var h = img.height;
+            if (w > maxDim || h > maxDim) {
+              if (w > h) {
+                h = Math.round(h * (maxDim / w));
+                w = maxDim;
+              } else {
+                w = Math.round(w * (maxDim / h));
+                h = maxDim;
+              }
+            }
+            var canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            var ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            var compressed = canvas.toDataURL('image/jpeg', 0.80);
+            updateDraftPhotoUI(compressed);
+          };
+          img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+
+      function sendNtfyPayload(ntfyPayload) {
         try {
           fetch('https://ntfy.sh/' + STICKY_TOPIC, {
             method: 'POST',
-            body: JSON.stringify(payload)
+            body: JSON.stringify(ntfyPayload)
           }).catch(function() {});
         } catch (e) {}
 
-        // 2. Also sync to Local PC Bridge if reachable
-        pingLocalBridge('/api/sticky?text=' + encodeURIComponent(payload.text) +
-                        '&color=' + encodeURIComponent(payload.color) +
-                        '&updatedAt=' + encodeURIComponent(payload.updatedAt));
+        pingLocalBridge('/api/sticky?text=' + encodeURIComponent(ntfyPayload.text || '') +
+                        '&color=' + encodeURIComponent(ntfyPayload.color || 'yellow') +
+                        '&imageKey=' + encodeURIComponent(ntfyPayload.imageKey || '') +
+                        '&updatedAt=' + encodeURIComponent(ntfyPayload.updatedAt || Date.now()));
+      }
+
+      function publishStickyNote(textValue, colorValue, photoDataUrl) {
+        var nowTs = Date.now();
+        var cleanText = String(textValue || '').trim();
+        var cleanColor = SWATCH_BG[colorValue] ? colorValue : 'yellow';
+        var localNote = {
+          text: cleanText,
+          color: cleanColor,
+          image: photoDataUrl || '',
+          imageKey: '',
+          updatedAt: nowTs
+        };
+
+        renderSticky(localNote);
+        closeStickyModal();
+        showToast('📌 Invio nota alla TV...');
+
+        if (photoDataUrl) {
+          // Upload full note + photo to bytebin, then push key over ntfy.sh
+          fetch('https://bytebin.lucko.me/post', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(localNote)
+          })
+            .then(function(r) { return r.json(); })
+            .then(function(res) {
+              var key = (res && res.key) ? res.key : '';
+              localNote.imageKey = key;
+              fetchedImageKeys[key] = true;
+              renderSticky(localNote);
+              sendNtfyPayload({
+                text: cleanText,
+                color: cleanColor,
+                imageKey: key,
+                updatedAt: nowTs
+              });
+              showToast('📌 Nota e foto inviate alla TV! ✓');
+            })
+            .catch(function() {
+              sendNtfyPayload({
+                text: cleanText,
+                color: cleanColor,
+                imageKey: '',
+                updatedAt: nowTs
+              });
+            });
+        } else {
+          sendNtfyPayload({
+            text: cleanText,
+            color: cleanColor,
+            imageKey: '',
+            updatedAt: nowTs
+          });
+          showToast('📌 Nota inviata alla TV! ✓');
+        }
       }
 
       stickySaveBtn.addEventListener('click', function() {
         var chosenColor = stickyInput.getAttribute('data-selected-color') || 'yellow';
-        publishStickyNote(stickyInput.value, chosenColor);
+        publishStickyNote(stickyInput.value, chosenColor, draftPhotoDataUrl);
       });
 
       stickyClearBtn.addEventListener('click', function() {
         stickyInput.value = '';
+        stickyPhotoInput.value = '';
+        updateDraftPhotoUI('');
         stickyInput.focus();
       });
 
       function pollCloudSticky() {
         try {
-          fetch('https://ntfy.sh/' + STICKY_TOPIC + '/json?poll=1&since=12h&_t=' + Date.now())
-            .then(function(r) { return r.text(); })
+          fetch('https://ntfy.sh/' + STICKY_TOPIC + '/json?poll=1&since=12h', { cache: 'no-store' })
+            .then(function(r) {
+              if (!r.ok) return '';
+              return r.text();
+            })
             .then(function(txt) {
               if (!txt) return;
               var lines = txt.trim().split('\n');
@@ -1441,10 +1721,30 @@
         } catch (e) {}
       }
 
+      function connectStickyWebSocket() {
+        if (typeof WebSocket === 'undefined') return;
+        try {
+          var ws = new WebSocket('wss://ntfy.sh/' + STICKY_TOPIC + '/ws');
+          ws.onmessage = function(ev) {
+            try {
+              var wrapper = JSON.parse(ev.data);
+              if (wrapper && wrapper.event === 'message' && wrapper.message) {
+                var noteObj = JSON.parse(wrapper.message);
+                applyIncomingSticky(noteObj);
+              }
+            } catch (e) {}
+          };
+          ws.onclose = function() {
+            setTimeout(connectStickyWebSocket, 4000);
+          };
+        } catch (e) {}
+      }
+
       function startStickyRealtimeSync() {
         renderSticky(currentSticky);
         pollCloudSticky();
-        setInterval(pollCloudSticky, 4000);
+        setInterval(pollCloudSticky, 8000);
+        connectStickyWebSocket();
 
         if (typeof EventSource !== 'undefined') {
           try {

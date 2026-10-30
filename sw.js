@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tvos-salone-v9';
+const CACHE_NAME = 'tvos-salone-v10';
 const ASSETS = [
   './',
   './index.html',
@@ -24,9 +24,14 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET' || event.request.url.includes('/api/') || event.request.url.includes('ntfy.sh')) return;
+  if (
+    event.request.method !== 'GET' ||
+    event.request.url.includes('/api/') ||
+    event.request.url.includes('ntfy.sh') ||
+    event.request.url.includes('bytebin.lucko.me')
+  ) return;
   event.respondWith(
-    fetch(event.request)
+    fetch(event.request, { cache: 'no-cache' })
       .then((res) => {
         const copy = res.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
