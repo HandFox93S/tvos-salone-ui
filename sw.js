@@ -1,8 +1,8 @@
-const CACHE_NAME = 'tvos-salone-v15';
+const CACHE_NAME = 'tvos-salone-v16';
 const ASSETS = [
   './',
   './index.html',
-  './sc.html?v=7',
+  './sc.html?v=8',
   './icons/youtube_custom.png?v=7',
   './icons/netflix_custom.png',
   './icons/mediaset_custom.png',
