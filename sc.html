@@ -1414,7 +1414,7 @@
           }
         } else if (code === 461 || code === 10009 || code === 27 || code === 8) {
           e.preventDefault();
-          window.location.href = './index.html?k=salone93';
+          window.location.href = './index.html?k=salone93&v=12';
           return;
         }
 
@@ -1437,6 +1437,13 @@
           if (focusableItems[focusIdx]) focusableItems[focusIdx].click();
         }
       }, true);
+
+      document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+          stopPlayer();
+          window.location.replace('./index.html?k=salone93&v=12');
+        }
+      });
 
       if (token) {
         pairScreen.classList.add('hidden');
