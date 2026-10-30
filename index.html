@@ -490,12 +490,13 @@
 
     .sticky-footer {
       margin-top: 1.2vh;
-      font-size: 0.72vw;
-      font-weight: 600;
-      color: rgba(28, 25, 23, 0.55);
+      font-size: 0.78vw;
+      font-weight: 700;
+      color: rgba(28, 25, 23, 0.58);
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-end;
+      font-variant-numeric: tabular-nums;
     }
 
     /* Sticky Note Editor Modal (For Phone / Touch / Click) */
@@ -672,16 +673,9 @@
 
   <!-- Sticky Note (Post-it) on Home Screen -->
   <aside id="stickyNote" class="sticky-note" data-color="yellow" title="Tocca per scrivere una nota sulla TV">
-    <div>
-      <div class="sticky-header">
-        <span>📌 Nota Salone</span>
-        <span id="stickyTime">Adesso</span>
-      </div>
-      <div id="stickyText" class="sticky-body">Tocca questo foglietto dal telefono per scrivere una nota sulla TV!</div>
-    </div>
+    <div id="stickyText" class="sticky-body">Tocca questo foglietto dal telefono per scrivere una nota sulla TV!</div>
     <div class="sticky-footer">
-      <span>✏️ Tocca per modificare</span>
-      <span>Tv Salone</span>
+      <span id="stickyTime">--:--</span>
     </div>
   </aside>
 
@@ -1309,12 +1303,11 @@
       } catch (e) {}
 
       function formatStickyTime(ts) {
-        if (!ts) return 'Nota attiva';
-        var d = new Date(ts);
-        if (isNaN(d.getTime())) return 'Nota attiva';
+        var d = ts ? new Date(ts) : new Date();
+        if (isNaN(d.getTime())) d = new Date();
         var hh = String(d.getHours()).padStart(2, '0');
         var mm = String(d.getMinutes()).padStart(2, '0');
-        return 'Agg. ' + hh + ':' + mm;
+        return hh + ':' + mm;
       }
 
       function renderSticky(note) {
