@@ -682,13 +682,22 @@
     .player-hud {
       position: absolute;
       inset: auto 0 0 0;
-      padding: 3vh 4vw;
-      background: linear-gradient(180deg, transparent, rgba(0,0,0,0.88));
+      padding: 3.2vh 4vw;
+      background: linear-gradient(180deg, transparent, rgba(0,0,0,0.92));
       display: flex;
       align-items: center;
       justify-content: space-between;
       font-size: 1.2vw;
       font-weight: 700;
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+
+    .player-hud.hidden-hud {
+      opacity: 0;
+      transform: translateY(18px);
+      pointer-events: none;
     }
   </style>
 </head>
@@ -778,8 +787,8 @@
 
   <!-- HLS VIDEO PLAYER -->
   <section id="playerOverlay" class="player-overlay">
-    <video id="videoEl" class="player-video" controls autoplay playsinline></video>
-    <div class="player-hud">
+    <video id="videoEl" class="player-video" autoplay playsinline></video>
+    <div id="playerHud" class="player-hud">
       <div>
         <div id="playerTitle">Riproduzione in corso</div>
         <div id="playerStatus" style="font-size:0.9vw;color:var(--accent);margin-top:0.4vh;"></div>
@@ -978,7 +987,32 @@
 
       var scToastEl = document.getElementById('scToast');
       var playerStatus = document.getElementById('playerStatus');
+      var playerHud = document.getElementById('playerHud');
+      var hudHideTimer = null;
       var lastCatalogFocusIdx = 0;
+
+      function formatTimeSec(sec) {
+        if (!sec || isNaN(sec) || sec < 0) return '00:00';
+        var total = Math.floor(sec);
+        var hrs = Math.floor(total / 3600);
+        var mins = Math.floor((total % 3600) / 60);
+        var secs = total % 60;
+        var mm = String(mins).padStart(2, '0');
+        var ss = String(secs).padStart(2, '0');
+        return hrs > 0 ? (hrs + ':' + mm + ':' + ss) : (mm + ':' + ss);
+      }
+
+      function showPlayerHud(durationMs) {
+        if (!playerHud) return;
+        playerHud.classList.remove('hidden-hud');
+        if (videoEl && videoEl.duration && !isNaN(videoEl.duration)) {
+          playerStatus.textContent = '▶ ' + formatTimeSec(videoEl.currentTime) + ' / ' + formatTimeSec(videoEl.duration);
+        }
+        clearTimeout(hudHideTimer);
+        hudHideTimer = setTimeout(function() {
+          playerHud.classList.add('hidden-hud');
+        }, durationMs || 3200);
+      }
 
       function showScToast(msg) {
         if (!scToastEl) return;
@@ -1326,6 +1360,7 @@
           hlsInstance.attachMedia(videoEl);
           hlsInstance.on(Hls.Events.MANIFEST_PARSED, function() {
             playerStatus.textContent = '▶ In riproduzione HD';
+            showPlayerHud(3200);
             videoEl.play().catch(function() {});
           });
           hlsInstance.on(Hls.Events.ERROR, function(event, data) {
@@ -1354,6 +1389,7 @@
         playerTitle.textContent = labelTitle || 'Riproduzione';
         playerStatus.textContent = '⏳ Avvio stream video HD in corso...';
         playerOverlay.classList.add('open');
+        showPlayerHud(4000);
 
         apiFetch('/episodes/' + encodeURIComponent(episodeId) + '/stream?dub=' + dubVal)
           .then(function(res) {
@@ -1408,9 +1444,14 @@
           } else if (code === 37) {
             e.preventDefault();
             videoEl.currentTime = Math.max(0, videoEl.currentTime - 10);
+            showPlayerHud(3200);
           } else if (code === 39) {
             e.preventDefault();
             videoEl.currentTime = videoEl.currentTime + 10;
+            showPlayerHud(3200);
+          } else if (code === 38 || code === 40) {
+            e.preventDefault();
+            showPlayerHud(3200);
           }
           return;
         }
