@@ -391,9 +391,13 @@
       border-radius: 1.4vw;
       padding: 2.2vh 2.4vw;
       margin-bottom: 3vh;
-      display: flex;
+      display: none;
       flex-direction: column;
       gap: 1.8vh;
+    }
+
+    .search-panel.open {
+      display: flex;
     }
 
     .search-bar-row {
@@ -1059,12 +1063,17 @@
 
       function loadHomeSection(section) {
         if (section === 'exit') {
-          window.location.href = './index.html?k=salone93';
+          window.location.href = './index.html?k=salone93&v=13';
           return;
         }
         document.querySelectorAll('.nav-tab').forEach(function(btn) {
           btn.classList.toggle('active', btn.getAttribute('data-section') === section);
         });
+
+        var searchPanelEl = document.getElementById('searchPanel');
+        if (searchPanelEl) {
+          searchPanelEl.classList.toggle('open', section === 'cerca');
+        }
 
         if (section === 'cerca') {
           heroContainer.innerHTML = '';
