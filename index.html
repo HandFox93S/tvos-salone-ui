@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Apple TV — Tv Salone</title>
+  <style>
+    :root {
+      --bg-deep: #080b12;
+      --dock-bg: rgba(24, 28, 38, 0.86);
+      --dock-border: rgba(255, 255, 255, 0.16);
+      --pill-bg: rgba(16, 19, 27, 0.78);
+      --text-primary: #f8fafc;
+      --text-secondary: rgba(248, 250, 252, 0.68);
+      --focus-ring: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background-color: var(--bg-deep);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      cursor: none;
+    }
+
+    /* Wallpaper Layer: Static while in Dock (zero lag), cycles every 60s ONLY in Aerial Mode */
+    .wallpaper-stage {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background-color: #080b12;
+      pointer-events: none;
+    }
+
+    .wallpaper-img {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      background-image: url("https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1920&q=80");
+      transition: opacity 0.8s ease;
+    }
+
+    .wallpaper-vignette {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(6, 9, 15, 0.24) 0%, rgba(6, 9, 15, 0.10) 46%, rgba(6, 9, 15, 0.78) 82%, rgba(6, 9, 15, 0.94) 100%);
+      transition: opacity 0.4s ease;
+    }
+
+    body.aerial-mode .wallpaper-vignette {
+      opacity: 0.22;
+    }
+
+    /* Main Screen Shell */
+    .tvos-shell {
+      position: relative;
+      z-index: 2;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 4vh 5vw 3.8vh;
+      transition: opacity 0.35s ease;
+    }
+
+    body.aerial-mode .tvos-shell {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Top Minimal Header */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 5.5vh;
+    }
+
+    .brand-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.65vw;
+      padding: 0.7vh 1.25vw;
+      border-radius: 999px;
+      background: var(--pill-bg);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      font-size: 1.05vw;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      color: var(--text-primary);
+    }
+
+    .brand-pill svg {
+      width: 1.2vw;
+      height: 1.2vw;
+      fill: currentColor;
+    }
+
+    .status-cluster {
+      display: flex;
+      align-items: center;
+      gap: 1.1vw;
+    }
+
+    .clock-display {
+      padding: 0.55vh 1.15vw;
+      border-radius: 999px;
+      background: var(--pill-bg);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      font-size: 1.45vw;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+      color: var(--text-primary);
+    }
+
+    /* Center Clean Area — Minimal Selected App Title */
+    .center-stage {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding-bottom: 2.8vh;
+      pointer-events: none;
+      transition: opacity 0.18s ease;
+    }
+
+    body.drawer-open .center-stage {
+      opacity: 0;
+    }
+
+    .selected-eyebrow {
+      font-size: 0.82vw;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: rgba(255, 255, 255, 0.72);
+      margin-bottom: 0.5vh;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+    }
+
+    .selected-title {
+      font-size: 3.2vw;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+      color: #ffffff;
+      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.85);
+    }
+
+    /* Bottom Dock Container (5 Icons Only, No Text Underneath) */
+    .bottom-area {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.6vh;
+    }
+
+    .tvos-dock {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1.8vw;
+      padding: 2.1vh 2.2vw;
+      border-radius: 2.2vw;
+      background: var(--dock-bg);
+      border: 1px solid var(--dock-border);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.65);
+      transition: transform 0.2s ease, opacity 0.2s ease;
+      will-change: transform;
+    }
+
+    body.drawer-open .tvos-dock {
+      transform: translate3d(0, -46vh, 0) scale(0.94);
+      opacity: 0.3;
+    }
+
+    /* Bottom Footer Hints */
+    .footer-bar {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 0.6vw;
+      font-size: 0.84vw;
+      color: var(--text-secondary);
+      transition: opacity 0.18s ease;
+    }
+
+    body.drawer-open .footer-bar {
+      opacity: 0;
+    }
+
+    .remote-shortcuts {
+      display: flex;
+      align-items: center;
+      gap: 1.5vw;
+    }
+
+    .shortcut-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45vw;
+    }
+
+    .color-dot {
+      width: 0.62vw;
+      height: 0.62vw;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    /* All Apps Drawer (Hidden until Down Arrow is pressed) */
+    .all-apps-drawer {
+      position: fixed;
+      left: 5vw;
+      right: 5vw;
+      bottom: 4.2vh;
+      z-index: 15;
+      padding: 2.8vh 2.4vw 3vh;
+      border-radius: 2.2vw;
+      background: rgba(14, 17, 25, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85);
+      transform: translate3d(0, 110%, 0);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.3, 1), opacity 0.16s ease;
+      will-change: transform, opacity;
+    }
+
+    body.drawer-open .all-apps-drawer {
+      transform: translate3d(0, 0, 0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .drawer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2.2vh;
+      padding: 0 0.4vw;
+    }
+
+    .drawer-title-group {
+      display: flex;
+      align-items: baseline;
+      gap: 1vw;
+    }
+
+    .drawer-title {
+      font-size: 1.5vw;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+    }
+
+    .drawer-subtitle {
+      font-size: 1.05vw;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .drawer-hint {
+      font-size: 0.88vw;
+      color: var(--text-secondary);
+    }
+
+    .drawer-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 1.8vh 1.6vw;
+    }
+
+    /* App Tile Card — Official Original Logos, Zero Cropping, Zero Text Labels Underneath */
+    .app-tile {
+      position: relative;
+      aspect-ratio: 16 / 9.5;
+      border-radius: 1.3vw;
+      outline: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform: translate3d(0, 0, 0) scale(1);
+      transition: transform 0.13s ease-out;
+      will-change: transform;
+    }
+
+    .tile-surface {
+      position: absolute;
+      inset: 0;
+      border-radius: 1.3vw;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6% 10%;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45);
+    }
+
+    .tile-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center;
+      display: block;
+      pointer-events: none;
+    }
+
+    /* Focused State — Instant Snappy Response */
+    .app-tile.focused {
+      z-index: 20;
+      transform: translate3d(0, -0.45vh, 0) scale(1.11);
+    }
+
+    .app-tile.focused .tile-surface {
+      border: 3.5px solid var(--focus-ring);
+      box-shadow: 0 16px 34px rgba(0, 0, 0, 0.8);
+    }
+
+    /* Aerial Screensaver Overlay (Shown only when Yellow button is pressed) */
+    .aerial-overlay {
+      position: fixed;
+      bottom: 5.5vh;
+      left: 5vw;
+      right: 5vw;
+      z-index: 25;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.45s ease;
+    }
+
+    body.aerial-mode .aerial-overlay {
+      opacity: 1;
+    }
+
+    .aerial-location {
+      font-size: 1.35vw;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.9);
+      text-shadow: 0 3px 16px rgba(0, 0, 0, 0.85);
+    }
+
+    .aerial-location span {
+      display: block;
+      font-size: 0.82vw;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: rgba(255, 255, 255, 0.65);
+      margin-bottom: 0.4vh;
+    }
+
+    .aerial-clock {
+      font-size: 4.5vw;
+      font-weight: 300;
+      letter-spacing: -0.03em;
+      color: rgba(255, 255, 255, 0.95);
+      text-shadow: 0 4px 22px rgba(0, 0, 0, 0.85);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Launch Toast */
+    .toast {
+      position: fixed;
+      top: 4vh;
+      left: 50%;
+      transform: translate3d(-50%, -2vh, 0);
+      z-index: 100;
+      padding: 1vh 1.8vw;
+      border-radius: 999px;
+      background: rgba(16, 19, 27, 0.94);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      color: #fff;
+      font-size: 1vw;
+      font-weight: 600;
+      opacity: 0;
+      transition: opacity 0.18s ease, transform 0.18s ease;
+      pointer-events: none;
+    }
+
+    .toast.visible {
+      opacity: 1;
+      transform: translate3d(-50%, 0, 0);
+    }
+  </style>
+</head>
+<body>
+  <!-- Wallpaper Stage -->
+  <div class="wallpaper-stage">
+    <div id="wallpaperImg" class="wallpaper-img"></div>
+    <div class="wallpaper-vignette"></div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast">Avvio in corso...</div>
+
+  <!-- Main Screen -->
+  <main class="tvos-shell">
+    <header class="top-bar">
+      <div class="brand-pill">
+        <svg viewBox="0 0 24 24"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.33c.64-.78 1.08-1.86.96-2.94-.93.04-2.06.62-2.72 1.4-.58.68-1.1 1.79-.96 2.84 1.04.08 2.08-.52 2.72-1.3z"/></svg>
+        <span>Tv Salone</span>
+      </div>
+
+      <div class="status-cluster">
+        <div id="clockDisplay" class="clock-display">--:--</div>
+      </div>
+    </header>
+
+    <!-- Minimal Selected App Label -->
+    <section class="center-stage">
+      <div id="selectedCategory" class="selected-eyebrow">Video &amp; Creator • 4K HDR</div>
+      <h1 id="selectedTitle" class="selected-title">YouTube</h1>
+    </section>
+
+    <!-- Bottom 5-Icon Dock + Remote Shortcuts -->
+    <section class="bottom-area">
+      <div id="dockRow" class="tvos-dock" role="row" aria-label="Dock principale"></div>
+
+      <div class="footer-bar">
+        <div class="remote-shortcuts">
+          <span class="shortcut-pill"><span class="color-dot" style="background:#eab308"></span> Giallo: Screensaver Aerial 4K</span>
+          <span class="shortcut-pill"><span class="color-dot" style="background:#22c55e"></span> Verde: Canali TV (DTV)</span>
+        </div>
+        <div>▼ Premi Giù per tutte le altre App</div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Hidden All Apps Drawer (Opens on Down Arrow) -->
+  <section id="allAppsDrawer" class="all-apps-drawer" aria-label="Tutte le App">
+    <div class="drawer-header">
+      <div class="drawer-title-group">
+        <div id="drawerAppTitle" class="drawer-title">Canali TV (DTV)</div>
+        <div id="drawerAppCategory" class="drawer-subtitle">Digitale Terrestre</div>
+      </div>
+      <div class="drawer-hint">▲ Premi Su o Indietro per tornare al Dock</div>
+    </div>
+    <div id="drawerGrid" class="drawer-grid"></div>
+  </section>
+
+  <!-- Aerial 4K Screensaver Overlay -->
+  <div class="aerial-overlay">
+    <div class="aerial-location">
+      <span>Apple TV Aerial 4K</span>
+      <div id="aerialCaption">Yosemite Valley — California</div>
+    </div>
+    <div id="aerialClock" class="aerial-clock">--:--</div>
+  </div>
+
+  <script>
+    (function() {
+      'use strict';
+
+      // Security Lock for GitHub Pages: only allow ?k=salone93 (or local LAN IP)
+      try {
+        var params = new URLSearchParams(window.location.search);
+        var keyParam = params.get('k');
+        var host = window.location.hostname || '';
+        var isLocalHost = (host === '192.168.1.138' || host === 'localhost' || host === '127.0.0.1');
+        if (keyParam === 'salone93') {
+          try { localStorage.setItem('tvos_salone_key', 'salone93'); } catch (e) {}
+        }
+        var storedKey = '';
+        try { storedKey = localStorage.getItem('tvos_salone_key') || ''; } catch (e) {}
+        if (!isLocalHost && keyParam !== 'salone93' && storedKey !== 'salone93') {
+          document.body.innerHTML = '';
+          document.body.style.background = '#000000';
+          return;
+        }
+      } catch (e) {}
+
+      try {
+        if (typeof Hisense_AddInsecureDomain === 'function') {
+          Hisense_AddInsecureDomain('192.168.1.138');
+          if (window.location.hostname) Hisense_AddInsecureDomain(window.location.hostname);
+        }
+      } catch (e) {}
+
+      var AERIAL_SCENES = [
+        {
+          url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1920&q=80',
+          caption: 'Yosemite Valley — California'
+        },
+        {
+          url: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1920&q=80',
+          caption: 'Cime innevate sotto le stelle — Alpi'
+        },
+        {
+          url: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1920&q=80',
+          caption: 'Foresta nella nebbia mattutina — Nord Europa'
+        },
+        {
+          url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1920&q=80',
+          caption: 'Oceano Pacifico al tramonto — Hawaii'
+        },
+        {
+          url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1920&q=80',
+          caption: 'Catena delle Dolomiti — Italia'
+        },
+        {
+          url: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1920&q=80',
+          caption: 'Lago Alpino all’alba — Patagonia'
+        }
+      ];
+
+      // === DOCK APPS: Custom PNG Logos & Exact Requested Backgrounds ===
+      var DOCK_APPS = [
+        {
+          id: 'youtube',
+          appId: '3',
+          name: 'YouTube',
+          category: 'Video & Creator • 4K HDR',
+          url: 'youtube',
+          webFallback: 'https://www.youtube.com/tv',
+          storeType: 98,
+          tileBg: '#FFFFFF',
+          tilePadding: '8% 13%',
+          icon: './icons/youtube_custom.png?v=7'
+        },
+        {
+          id: 'netflix',
+          appId: '1',
+          name: 'Netflix',
+          category: 'Cinema & Serie Originali • 4K',
+          url: 'netflix',
+          storeType: 98,
+          tileBg: '#000000',
+          icon: './icons/netflix_custom.png'
+        },
+        {
+          id: 'mediaset',
+          appId: '198',
+          name: 'Mediaset Infinity',
+          category: 'Canali Mediaset Live & On Demand',
+          url: 'https://static1.mediasetplay.mediaset.it/app/ctv/hisense/index.html',
+          storeType: 98,
+          tileBg: '#151E25',
+          fullBleed: true,
+          icon: './icons/mediaset_custom.png'
+        },
+        {
+          id: 'prime',
+          appId: '2',
+          name: 'Prime Video',
+          category: 'Amazon Originals & Sport',
+          url: 'amazon',
+          storeType: 98,
+          tileBg: '#0578FF',
+          icon: './icons/2.png'
+        },
+        {
+          id: 'spotify',
+          appId: '2256',
+          name: 'Spotify',
+          category: 'Musica & Podcast',
+          url: 'https://api-partner.spotify.com/tvapp?platform=vidaa',
+          storeType: 99,
+          tileBg: '#1ED760',
+          icon: './icons/2256.jpg'
+        }
+      ];
+
+      var LIVE_TV_APP = {
+        id: 'livetv',
+        appId: '2387',
+        name: 'Canali TV (DTV)',
+        category: 'Digitale Terrestre',
+        url: 'live-tv',
+        storeType: 99
+      };
+
+      // === SECONDARY DRAWER APPS: Official Original Transparent Logos ===
+      var DRAWER_APPS = [
+        {
+          id: 'livetv',
+          appId: '2387',
+          name: 'Canali TV (DTV)',
+          category: 'Digitale Terrestre Live',
+          url: 'live-tv',
+          storeType: 99,
+          tileBg: 'linear-gradient(145deg, #0a295e 0%, #05132e 100%)',
+          icon: './icons-clean/2387.png'
+        },
+        {
+          id: 'disney',
+          appId: '295',
+          name: 'Disney+',
+          category: 'Disney • Pixar • Marvel • Star Wars',
+          url: 'https://cd-dmgz.bamgrid.com/bbd/hisense_tv/index.html',
+          storeType: 99,
+          tileBg: 'linear-gradient(145deg, #09223b 0%, #04101f 100%)',
+          icon: './icons-clean/295.png'
+        },
+        {
+          id: 'stremio',
+          appId: 'stremiodebug',
+          name: 'Stremio 4K',
+          category: 'Home Theater 4K HDR & Addons',
+          url: 'https://noobygains.github.io/stremio-vidaa-tv/?install_source=sidee',
+          storeType: 99,
+          directWeb: true,
+          tileBg: 'linear-gradient(145deg, #27184d 0%, #120b26 100%)',
+          icon: './icons-clean/stremiodebug.png'
+        },
+        {
+          id: 'raiplay',
+          appId: '221',
+          name: 'RaiPlay',
+          category: 'Dirette Rai & On Demand',
+          url: 'https://www.raiplay.it/appTv/rp2020SmartTV/prod/',
+          storeType: 99,
+          tileBg: 'linear-gradient(145deg, #0e173d 0%, #060a1f 100%)',
+          icon: './icons-clean/221.png'
+        },
+        {
+          id: 'appletv',
+          appId: '351',
+          name: 'Apple TV+',
+          category: 'Apple Originals • 4K Dolby Atmos',
+          url: 'https://atve.tv.apple.com/94819831-5404-4438-810e-afb648d6a826/tvw_1dc2aab0a313427dbc11818be8a18bd9/',
+          storeType: 99,
+          tileBg: 'linear-gradient(145deg, #262930 0%, #121418 100%)',
+          icon: './icons-clean/351.png'
+        },
+        {
+          id: 'dazn',
+          appId: '162',
+          name: 'DAZN',
+          category: 'Serie A & Sport Live',
+          url: 'https://tv.dazn.com/app/vidaa/',
+          storeType: 99,
+          tileBg: 'linear-gradient(145deg, #1e2229 0%, #0c0e12 100%)',
+          icon: './icons-clean/162.png'
+        },
+        {
+          id: 'now',
+          appId: '339',
+          name: 'NOW',
+          category: 'Sky Cinema, Serie & Sport',
+          url: 'https://tv.clients.nowtv.com/vidaa-nowitalia.html?classicTerritory=IT&DCMP=VIDAAWNOWAPPTILE',
+          storeType: 99,
+          tileBg: 'linear-gradient(145deg, #083c40 0%, #031c1e 100%)',
+          icon: './icons-clean/339.png'
+        },
+        {
+          id: 'plex',
+          appId: '42',
+          name: 'Plex',
+          category: 'Media Server & Film',
+          url: 'https://app.plex.tv/tv-vidaa',
+          storeType: 98,
+          tileBg: 'linear-gradient(145deg, #2e2412 0%, #141007 100%)',
+          icon: './icons-clean/42.png'
+        },
+        {
+          id: 'paramount',
+          appId: '334',
+          name: 'Paramount+',
+          category: 'Cinema & Serie',
+          url: 'https://www.intl.paramountplus.com/smart-console-apps/vidaa/',
+          storeType: 99,
+          tileBg: 'linear-gradient(145deg, #072c66 0%, #03132e 100%)',
+          icon: './icons-clean/334.png'
+        },
+        {
+          id: 'hbomax',
+          appId: '2378',
+          name: 'HBO Max',
+          category: 'HBO • Warner Bros • DC',
+          url: 'https://vidaa.play.max.com/',
+          storeType: 99,
+          tileBg: 'linear-gradient(145deg, #0b1445 0%, #04081f 100%)',
+          icon: './icons-clean/2378.png'
+        },
+        {
+          id: 'crunchyroll',
+          appId: '2372',
+          name: 'Crunchyroll',
+          category: 'Anime & Simulcast',
+          url: 'https://www.crunchyroll.com/tetsuo/hisense-vidaa/',
+          storeType: 99,
+          tileBg: 'linear-gradient(145deg, #3d1d08 0%, #1a0b03 100%)',
+          icon: './icons-clean/2372.png'
+        },
+        {
+          id: 'la7',
+          appId: '2582',
+          name: 'LA7 Play',
+          category: 'Diretta & On Demand',
+          url: 'https://ht.la7.it/smartTV/',
+          storeType: 98,
+          tileBg: 'linear-gradient(145deg, #0d2538 0%, #05101a 100%)',
+          icon: './icons-clean/2582.png'
+        },
+        {
+          id: 'pluto',
+          appId: '173',
+          name: 'Pluto TV',
+          category: 'Canali TV & Film Gratuiti',
+          url: 'https://app-hisense.pluto.tv/',
+          storeType: 98,
+          tileBg: 'linear-gradient(145deg, #212126 0%, #0e0e12 100%)',
+          icon: './icons-clean/173.png'
+        },
+        {
+          id: 'rakuten',
+          appId: '65',
+          name: 'Rakuten TV',
+          category: 'Cinema On Demand',
+          url: 'https://prod-hisense-ui40-app.rakuten.tv/',
+          storeType: 99,
+          tileBg: 'linear-gradient(145deg, #3b0d0d 0%, #170404 100%)',
+          icon: './icons-clean/65.png'
+        },
+        {
+          id: 'timvision',
+          appId: '159',
+          name: 'TIMVISION',
+          category: 'Intrattenimento & Sport',
+          url: 'https://secure-stb-static.canal-plus.com/webapp/hisensetv/webapp/index.html?target=hisensetv&brand=tim',
+          storeType: 98,
+          tileBg: 'linear-gradient(145deg, #082359 0%, #030e26 100%)',
+          icon: './icons-clean/159.png'
+        },
+        {
+          id: 'deezer',
+          appId: '47',
+          name: 'Deezer',
+          category: 'Musica Streaming',
+          url: 'https://tv2.deezer.com/hisense',
+          storeType: 98,
+          tileBg: 'linear-gradient(145deg, #251438 0%, #0f0717 100%)',
+          icon: './icons-clean/47.png'
+        },
+        {
+          id: 'vidaaart',
+          appId: '2243',
+          name: 'VIDAA Art',
+          category: 'Galleria & Quadri',
+          url: 'https://tvmodules-vidaa.vidaahub.com/vidaa-art/V1.0/index-vidaa-art.html',
+          storeType: 99,
+          tileBg: 'linear-gradient(145deg, #1c202e 0%, #0b0d14 100%)',
+          icon: './icons-clean/2243.png'
+        },
+        {
+          id: 'vidaahome',
+          appId: 'exit_to_vidaa',
+          name: 'Menu VIDAA Originale',
+          category: 'Torna al menu di sistema Hisense',
+          url: '#exit',
+          isExitToVidaa: true,
+          tileBg: 'linear-gradient(145deg, #1f2937 0%, #0f172a 100%)',
+          icon: './icons-clean/2562.png'
+        }
+      ];
+
+      var inDrawer = false;
+      var aerialMode = false;
+      var aerialIdx = 0;
+      var aerialTimer = null;
+      var dockIndex = 0;
+      var drawerIndex = 0;
+      var DRAWER_COLS = 6;
+
+      var dockRow = document.getElementById('dockRow');
+      var drawerGrid = document.getElementById('drawerGrid');
+      var selectedCategory = document.getElementById('selectedCategory');
+      var selectedTitle = document.getElementById('selectedTitle');
+      var drawerAppTitle = document.getElementById('drawerAppTitle');
+      var drawerAppCategory = document.getElementById('drawerAppCategory');
+      var clockDisplay = document.getElementById('clockDisplay');
+      var aerialClock = document.getElementById('aerialClock');
+      var aerialCaption = document.getElementById('aerialCaption');
+      var wallpaperImg = document.getElementById('wallpaperImg');
+      var toastEl = document.getElementById('toast');
+
+      var dockEls = [];
+      var drawerEls = [];
+
+      function createTileElement(app, onClick) {
+        var tile = document.createElement('div');
+        tile.className = 'app-tile';
+        var surface = document.createElement('div');
+        surface.className = 'tile-surface';
+        surface.style.background = app.tileBg;
+
+        var img = document.createElement('img');
+        img.className = 'tile-img';
+        img.src = app.icon;
+        img.alt = app.name;
+        if (app.fullBleed) {
+          surface.style.padding = '0';
+          img.style.objectFit = 'cover';
+        } else if (app.tilePadding) {
+          surface.style.padding = app.tilePadding;
+        }
+
+        surface.appendChild(img);
+        tile.appendChild(surface);
+        tile.addEventListener('click', onClick);
+        return tile;
+      }
+
+      DOCK_APPS.forEach(function(app, idx) {
+        var el = createTileElement(app, function() {
+          setFocus(false, idx);
+          launchApp(app);
+        });
+        dockRow.appendChild(el);
+        dockEls.push(el);
+      });
+
+      DRAWER_APPS.forEach(function(app, idx) {
+        var el = createTileElement(app, function() {
+          setFocus(true, idx);
+          launchApp(app);
+        });
+        drawerGrid.appendChild(el);
+        drawerEls.push(el);
+      });
+
+      function setFocus(targetDrawer, idx) {
+        dockEls[dockIndex].classList.remove('focused');
+        drawerEls[drawerIndex].classList.remove('focused');
+
+        if (targetDrawer !== inDrawer) {
+          inDrawer = targetDrawer;
+          if (inDrawer) {
+            document.body.classList.add('drawer-open');
+          } else {
+            document.body.classList.remove('drawer-open');
+          }
+        }
+
+        if (!inDrawer) {
+          dockIndex = Math.max(0, Math.min(DOCK_APPS.length - 1, idx));
+          dockEls[dockIndex].classList.add('focused');
+          var app = DOCK_APPS[dockIndex];
+          selectedCategory.textContent = app.category;
+          selectedTitle.textContent = app.name;
+        } else {
+          drawerIndex = Math.max(0, Math.min(DRAWER_APPS.length - 1, idx));
+          drawerEls[drawerIndex].classList.add('focused');
+          var dApp = DRAWER_APPS[drawerIndex];
+          drawerAppTitle.textContent = dApp.name;
+          drawerAppCategory.textContent = dApp.category;
+        }
+      }
+
+      function showAerialScene(index) {
+        var scene = AERIAL_SCENES[index % AERIAL_SCENES.length];
+        var pre = new Image();
+        pre.onload = function() {
+          wallpaperImg.style.backgroundImage = 'url("' + scene.url + '")';
+          aerialCaption.textContent = scene.caption;
+        };
+        pre.src = scene.url;
+      }
+
+      function toggleAerialMode(forceState) {
+        aerialMode = typeof forceState === 'boolean' ? forceState : !aerialMode;
+        if (aerialMode) {
+          if (inDrawer) setFocus(false, dockIndex);
+          document.body.classList.add('aerial-mode');
+          showAerialScene(aerialIdx);
+          if (aerialTimer) clearInterval(aerialTimer);
+          aerialTimer = setInterval(function() {
+            aerialIdx = (aerialIdx + 1) % AERIAL_SCENES.length;
+            showAerialScene(aerialIdx);
+          }, 60000);
+        } else {
+          document.body.classList.remove('aerial-mode');
+          if (aerialTimer) {
+            clearInterval(aerialTimer);
+            aerialTimer = null;
+          }
+        }
+      }
+
+      function showToast(msg) {
+        toastEl.textContent = msg;
+        toastEl.classList.add('visible');
+        clearTimeout(toastEl._t);
+        toastEl._t = setTimeout(function() {
+          toastEl.classList.remove('visible');
+        }, 2200);
+      }
+
+      var LOCAL_BRIDGE = 'http://192.168.1.138:3667';
+
+      function pingLocalBridge(pathAndQuery) {
+        try {
+          var img = new Image();
+          img.src = LOCAL_BRIDGE + pathAndQuery + '&_t=' + Date.now();
+        } catch (e) {}
+        try {
+          fetch(LOCAL_BRIDGE + pathAndQuery, { method: 'GET', mode: 'no-cors' }).catch(function() {});
+        } catch (e) {}
+      }
+
+      function launchApp(app) {
+        if (app.isExitToVidaa) {
+          showToast('Apertura Menu VIDAA...');
+          pingLocalBridge('/api/pause-guard?seconds=45');
+          setTimeout(function() {
+            try { if (typeof Hisense_Exit === 'function') Hisense_Exit(); } catch (e) {}
+          }, 180);
+          return;
+        }
+
+        showToast('Avvio di ' + app.name + '...');
+
+        if (app.directWeb && app.url.indexOf('http') === 0) {
+          window.location.href = app.url;
+          return;
+        }
+
+        var nativeSent = false;
+        try {
+          var cmdInfo = {
+            type: 'APPMessage',
+            MsgType: 'appControl',
+            action: 'startThirdApp',
+            startAppType: 1,
+            source: 'browser',
+            param: {
+              appName: 'vidaa-home-os',
+              startFrom: '7',
+              startFromURL: window.location.href,
+              third_appName: app.name,
+              deep_linking: app.url,
+              third_appId: String(app.appId),
+              storeType: Number(app.storeType || 99)
+            }
+          };
+          var payloadStr = JSON.stringify(cmdInfo);
+          if (window.omi_platform && typeof window.omi_platform.sendPlatformMessage === 'function') {
+            window.omi_platform.sendPlatformMessage(payloadStr);
+            nativeSent = true;
+          } else if (window.opera_omi && typeof window.opera_omi.sendPlatformMessage === 'function') {
+            window.opera_omi.sendPlatformMessage(payloadStr);
+            nativeSent = true;
+          }
+        } catch (e) {}
+
+        pingLocalBridge('/api/launch?appId=' + encodeURIComponent(app.appId) +
+                        '&name=' + encodeURIComponent(app.name) +
+                        '&url=' + encodeURIComponent(app.url));
+
+        var targetWeb = (app.url && app.url.indexOf('http') === 0) ? app.url : app.webFallback;
+        if (targetWeb) {
+          setTimeout(function() {
+            if (!document.hidden) {
+              window.location.href = targetWeb;
+            }
+          }, nativeSent ? 700 : 180);
+        }
+      }
+
+      document.addEventListener('keydown', function(e) {
+        var code = e.keyCode || e.which;
+
+        if (aerialMode) {
+          e.preventDefault();
+          toggleAerialMode(false);
+          return;
+        }
+
+        // Yellow Button (405) -> Toggle Aerial 4K Screensaver Mode
+        if (code === 405) {
+          e.preventDefault();
+          toggleAerialMode(true);
+          return;
+        }
+
+        // Green Button (404) -> Instant switch to Canali TV (Digitale Terrestre)
+        if (code === 404) {
+          e.preventDefault();
+          launchApp(LIVE_TV_APP);
+          return;
+        }
+
+        // Red Button (403) -> Free for now (no-op)
+        if (code === 403) {
+          e.preventDefault();
+          return;
+        }
+
+        if (!inDrawer) {
+          if (code === 37) {
+            e.preventDefault();
+            if (dockIndex > 0) setFocus(false, dockIndex - 1);
+          } else if (code === 39) {
+            e.preventDefault();
+            if (dockIndex < DOCK_APPS.length - 1) setFocus(false, dockIndex + 1);
+          } else if (code === 40) {
+            e.preventDefault();
+            var mappedCol = Math.min(DRAWER_COLS - 1, dockIndex);
+            setFocus(true, mappedCol);
+          } else if (code === 13) {
+            e.preventDefault();
+            launchApp(DOCK_APPS[dockIndex]);
+          } else if (code === 461 || code === 10009 || code === 27 || code === 8) {
+            e.preventDefault();
+          }
+        } else {
+          if (code === 37) {
+            e.preventDefault();
+            if (drawerIndex % DRAWER_COLS > 0) setFocus(true, drawerIndex - 1);
+          } else if (code === 39) {
+            e.preventDefault();
+            if (drawerIndex % DRAWER_COLS < DRAWER_COLS - 1 && drawerIndex + 1 < DRAWER_APPS.length) {
+              setFocus(true, drawerIndex + 1);
+            }
+          } else if (code === 38) {
+            e.preventDefault();
+            if (drawerIndex - DRAWER_COLS >= 0) {
+              setFocus(true, drawerIndex - DRAWER_COLS);
+            } else {
+              var dockCol = Math.min(DOCK_APPS.length - 1, drawerIndex % DRAWER_COLS);
+              setFocus(false, dockCol);
+            }
+          } else if (code === 40) {
+            e.preventDefault();
+            if (drawerIndex + DRAWER_COLS < DRAWER_APPS.length) {
+              setFocus(true, drawerIndex + DRAWER_COLS);
+            }
+          } else if (code === 13) {
+            e.preventDefault();
+            launchApp(DRAWER_APPS[drawerIndex]);
+          } else if (code === 461 || code === 10009 || code === 27 || code === 8) {
+            e.preventDefault();
+            setFocus(false, dockIndex);
+          }
+        }
+      }, true);
+
+      function updateClock() {
+        var now = new Date();
+        var hh = String(now.getHours()).padStart(2, '0');
+        var mm = String(now.getMinutes()).padStart(2, '0');
+        var str = hh + ':' + mm;
+        clockDisplay.textContent = str;
+        aerialClock.textContent = str;
+      }
+      updateClock();
+      setInterval(updateClock, 10000);
+
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').then(function(reg) {
+          reg.update();
+        }).catch(function() {});
+      }
+
+      setFocus(false, 0);
+    })();
+  </script>
+</body>
+</html>
