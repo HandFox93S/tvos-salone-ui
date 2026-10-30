@@ -269,6 +269,16 @@
       transition: all 0.16s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
+    .nav-tab.nav-search-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.14);
+      color: #f8fafc;
+      padding: 0.95vh 1.55vw;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45vw;
+    }
+
     .nav-tab.active {
       color: #ffffff;
       background: rgba(25, 173, 121, 0.18);
@@ -1091,14 +1101,12 @@
         </div>
         <nav id="navTabs" class="nav-tabs">
           <button class="nav-tab active" data-section="home">Home</button>
-          <button class="nav-tab" data-section="cerca">🔍 Cerca</button>
           <button class="nav-tab" data-section="film">Film</button>
           <button class="nav-tab" data-section="serie">Serie TV</button>
           <button class="nav-tab" data-section="esplora">Esplora</button>
-          <button class="nav-tab" data-section="exit">⬅ Apple TV Home</button>
         </nav>
       </div>
-      <div id="userBadge" style="font-size:1vw;color:var(--muted);font-weight:700;"></div>
+      <button class="nav-tab nav-search-btn" data-section="cerca">🔍 Cerca</button>
     </header>
 
     <div id="contentScroll" class="content-scroll">
@@ -1173,7 +1181,6 @@
       var pairCodeDisplay = document.getElementById('pairCodeDisplay');
       var pairQrImg = document.getElementById('pairQrImg');
       var pairStatusText = document.getElementById('pairStatusText');
-      var userBadge = document.getElementById('userBadge');
       var heroContainer = document.getElementById('heroContainer');
       var carouselsContainer = document.getElementById('carouselsContainer');
       var detailsModal = document.getElementById('detailsModal');
@@ -1401,9 +1408,6 @@
                     token = poll.token;
                     try { localStorage.setItem(TOKEN_KEY, token); } catch (e) {}
                     pairStatusText.textContent = 'Accesso confermato! Apertura catalogo...';
-                    if (poll.user && poll.user.username) {
-                      userBadge.textContent = '👤 ' + poll.user.username;
-                    }
                     setTimeout(function() {
                       pairScreen.classList.add('hidden');
                       loadHomeSection('home');
@@ -2255,10 +2259,7 @@
       if (token) {
         pairScreen.classList.add('hidden');
         apiFetch('/auth/me')
-          .then(function(me) {
-            if (me && me.user && me.user.username) {
-              userBadge.textContent = '👤 ' + me.user.username;
-            }
+          .then(function() {
             loadHomeSection('home');
           })
           .catch(function() {
