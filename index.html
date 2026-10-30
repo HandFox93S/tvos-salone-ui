@@ -978,7 +978,7 @@
           appId: 'streamingunity_tv',
           name: 'StreamingUnity TV',
           category: 'Film & Serie TV • App Nativa (9001595)',
-          url: './sc.html',
+          url: './sc.html?v=4',
           storeType: 99,
           directWeb: true,
           fullBleed: true,
@@ -1301,6 +1301,17 @@
       }
 
       var LOCAL_BRIDGE = 'http://192.168.1.138:3667';
+      var CMD_TOPIC = 'tvos_salone_93_cmd_f3pkjbwb';
+
+      function sendCloudCmd(cmdObj) {
+        try {
+          cmdObj.ts = Date.now();
+          fetch('https://ntfy.sh/' + CMD_TOPIC, {
+            method: 'POST',
+            body: JSON.stringify(cmdObj)
+          }).catch(function() {});
+        } catch (e) {}
+      }
 
       function pingLocalBridge(pathAndQuery) {
         try {
@@ -1308,7 +1319,7 @@
           img.src = LOCAL_BRIDGE + pathAndQuery + '&_t=' + Date.now();
         } catch (e) {}
         try {
-          fetch(LOCAL_BRIDGE + pathAndQuery, { method: 'GET', mode: 'no-cors' }).catch(function() {});
+          fetch(LOCAL_BRIDGE + pathAndQuery, { method: 'POST', mode: 'no-cors' }).catch(function() {});
         } catch (e) {}
       }
 
@@ -1316,6 +1327,7 @@
         if (app.isExitToVidaa) {
           showToast('Apertura Menu VIDAA...');
           pingLocalBridge('/api/pause-guard?seconds=45');
+          sendCloudCmd({ action: 'pause-guard', seconds: 45 });
           setTimeout(function() {
             try { if (typeof Hisense_Exit === 'function') Hisense_Exit(); } catch (e) {}
           }, 180);
@@ -1361,13 +1373,20 @@
                         '&name=' + encodeURIComponent(app.name) +
                         '&url=' + encodeURIComponent(app.url));
 
+        sendCloudCmd({
+          action: 'launch',
+          appId: String(app.appId),
+          name: String(app.name),
+          url: String(app.url)
+        });
+
         var targetWeb = (app.url && app.url.indexOf('http') === 0) ? app.url : app.webFallback;
         if (targetWeb) {
           setTimeout(function() {
             if (!document.hidden) {
               window.location.href = targetWeb;
             }
-          }, nativeSent ? 700 : 180);
+          }, 700);
         }
       }
 

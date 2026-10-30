@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tvos-salone-v11';
+const CACHE_NAME = 'tvos-salone-v12';
 const ASSETS = [
   './',
   './index.html',
