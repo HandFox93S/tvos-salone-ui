@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tvos-salone-v7';
+const CACHE_NAME = 'tvos-salone-v8';
 const ASSETS = [
   './',
   './index.html',
@@ -24,7 +24,7 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET' || event.request.url.includes('/api/')) return;
+  if (event.request.method !== 'GET' || event.request.url.includes('/api/') || event.request.url.includes('ntfy.sh')) return;
   event.respondWith(
     fetch(event.request)
       .then((res) => {
