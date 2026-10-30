@@ -1,12 +1,14 @@
-const CACHE_NAME = 'tvos-salone-v10';
+const CACHE_NAME = 'tvos-salone-v11';
 const ASSETS = [
   './',
   './index.html',
+  './sc.html',
   './icons/youtube_custom.png?v=7',
   './icons/netflix_custom.png',
   './icons/mediaset_custom.png',
   './icons/2.png',
-  './icons/2256.jpg'
+  './icons/2256.jpg',
+  './icons/sc_9n.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -28,7 +30,8 @@ self.addEventListener('fetch', (event) => {
     event.request.method !== 'GET' ||
     event.request.url.includes('/api/') ||
     event.request.url.includes('ntfy.sh') ||
-    event.request.url.includes('bytebin.lucko.me')
+    event.request.url.includes('bytebin.lucko.me') ||
+    event.request.url.includes('streamingunity-premium.to')
   ) return;
   event.respondWith(
     fetch(event.request, { cache: 'no-cache' })

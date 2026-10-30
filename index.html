@@ -974,6 +974,18 @@
       // === SECONDARY DRAWER APPS: Official Original Transparent Logos ===
       var DRAWER_APPS = [
         {
+          id: 'streamingunity',
+          appId: 'streamingunity_tv',
+          name: 'StreamingUnity TV',
+          category: 'Film & Serie TV • App Nativa (9001595)',
+          url: './sc.html',
+          storeType: 99,
+          directWeb: true,
+          fullBleed: true,
+          tileBg: '#101012',
+          icon: './icons/sc_9n.png'
+        },
+        {
           id: 'livetv',
           appId: '2387',
           name: 'Canali TV (DTV)',
@@ -1312,7 +1324,7 @@
 
         showToast('Avvio di ' + app.name + '...');
 
-        if (app.directWeb && app.url.indexOf('http') === 0) {
+        if (app.directWeb && app.url) {
           window.location.href = app.url;
           return;
         }
